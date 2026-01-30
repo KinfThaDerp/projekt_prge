@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from app.routes.static_content import router
-from app.routes.db_insert import router_insert
-from app.routes.dynamic_content import router_get_users
+from .routes.static_content import router
+from .routes.fetchers.fetch_users import router_fetch_users
+from .routes.inserters.insert_user import router_insert_user
 from starlette.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Mapbook API")
@@ -16,5 +16,5 @@ app.add_middleware(
 
 
 app.include_router(router, prefix="/app")
-app.include_router(router_insert, prefix="/app")
-app.include_router(router_get_users, prefix="/app")
+app.include_router(router_fetch_users, prefix="/app")
+app.include_router(router_insert_user, prefix="/app")

@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from ..database import get_db
+from ...database import get_db
 
-router_get_users = APIRouter()
+router_fetch_users = APIRouter()
 
-@router_get_users.get("/get_users")
+@router_fetch_users.get("/get_users")
 async def get_users(db: Session = Depends(get_db)):
     try:
         sql_query = text("""SELECT * FROM users""")

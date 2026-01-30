@@ -23,7 +23,7 @@ CREATE TABLE city (
     id serial PRIMARY KEY,
     name text NOT NULL,
     voivodeship text NOT NULL,
-    coords real[2]
+    coords GEOMETRY(Point, 4326)
 );
 
 
@@ -33,7 +33,7 @@ CREATE TABLE address (
     street text NOT NULL,
     building text NOT NULL,
     apartment text,
-    coords real[2]
+    coords GEOMETRY(Point, 4326)
 );
 
 

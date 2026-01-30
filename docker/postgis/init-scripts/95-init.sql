@@ -6,20 +6,19 @@
 -- Cities
 -- =========================
 INSERT INTO city (name, voivodeship, coords) VALUES
-('Warsaw', 'Mazowieckie', ARRAY[52.2297, 21.0122]::real[]),
-('Krakow', 'Malopolskie', ARRAY[50.0647, 19.9450]::real[]),
-('Gdansk', 'Pomorskie', ARRAY[54.3520, 18.6466]::real[]);
+('Warsaw', 'Mazowieckie', ST_SetSRID(ST_MakePoint(21.0122, 52.2297), 4326)),
+('Krakow', 'Malopolskie', ST_SetSRID(ST_MakePoint(19.9450, 50.0647), 4326)),
+('Gdansk', 'Pomorskie', ST_SetSRID(ST_MakePoint(18.6466, 54.3520), 4326));
 
 
 -- =========================
 -- Addresses
 -- =========================
 INSERT INTO address (city_id, street, building, apartment, coords) VALUES
-(1, 'Marszalkowska', '10', '5A', ARRAY[52.2297, 21.0122]::real[]),
-(2, 'Florianska', '15', NULL, ARRAY[50.0647, 19.9450]::real[]),
-(3, 'Dluga', '8', '2B', ARRAY[54.3520, 18.6466]::real[]),
-(1, 'Nowy Swiat', '20', '3C', ARRAY[52.2300, 21.0100]::real[]);
-
+(1, 'Marszalkowska', '10', '5A', ST_SetSRID(ST_MakePoint(21.0122, 52.2297), 4326)),
+(2, 'Florianska', '15', NULL, ST_SetSRID(ST_MakePoint(19.9450, 50.0647), 4326)),
+(3, 'Dluga', '8', '2B', ST_SetSRID(ST_MakePoint(18.6466, 54.3520), 4326)),
+(1, 'Nowy Swiat', '20', '3C', ST_SetSRID(ST_MakePoint(21.0100, 52.2300), 4326));
 
 -- =========================
 -- Contacts

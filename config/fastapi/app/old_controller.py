@@ -6,71 +6,13 @@ from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 import requests
 
-load_dotenv(verbose=True)
-
-
 # Database
-
-connection = psycopg2.connect(
-    dbname=os.getenv("DB_NAME"),
-    user=os.getenv("DB_USERNAME"),
-    password=os.getenv("DB_PASSWORD"),
-    host=os.getenv("DB_HOST"),
-    port=os.getenv("DB_PORT"),
-)
-cursor = connection.cursor()
-
 
 #  Validation
 
-EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
-def is_valid_email(email: str) -> bool:
-    return bool(EMAIL_REGEX.fullmatch(email))
-
-
-def is_valid_phone_number(phone_number:int) -> bool:
-    if (len(str(phone_number)) == 9 or len(str(phone_number)) == 11)  and isinstance(phone_number, int):
-        return True
-    else:
-        return False
-
-
 #  Password Hashing
 
-def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-
-
-def verify_password(password: str, stored_hash: str) -> bool:
-    return bcrypt.checkpw(password.encode(), stored_hash.encode())
-
-
 #  Web Scraping
-
-header = {
-            "User-Agent": "<Mozilla 5/0 (Windows NT 10.0; Win64; x64; Trident/7.0)>",
-        }
-def scrape_coords(location) -> (float, float):
-    url: str = f'https://pl.wikipedia.org/wiki/{location}'
-    response = requests.get(url, headers=header)
-    response_html = BeautifulSoup(response.content, 'html.parser')
-    latitude = float((response_html.select('.latitude'))[1].text.replace(',', '.'))
-    longitude = float((response_html.select('.longitude'))[1].text.replace(',', '.'))
-    return latitude, longitude
-
-
-def scrape_voivodeship(location) -> str | None:
-    url: str = f'https://pl.wikipedia.org/wiki/{location}'
-    response = requests.get(url, headers=header)
-    response_html = BeautifulSoup(response.content, 'html.parser')
-
-    links = response_html.find_all('a', title=True)
-    for link in links:
-        title = link['title']
-        if title.startswith('Województwo '):
-            return link.text.strip()
-    return None
-
 
 #  Database
 
