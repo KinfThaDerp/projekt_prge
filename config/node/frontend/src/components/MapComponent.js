@@ -32,9 +32,9 @@ function MapComponent(props) {
                 new TileLayer({
                     //http://localhost:9000/geoserver/prge/wms?service=WMS&version=1.1.0&request=GetMap&layers=prge%3Ausers&bbox=13.771362%2C49.077464%2C25.032349%2C55.043762&width=768&height=406&srs=EPSG%3A4326&styles=&format=application/openlayers
                     source: new TileWMS({
-                        url: 'http://localhost:9000/geoserver/prge/wms?',
+                        url: 'http://localhost:9000/geoserver/projekt_prge/wms?',
                         params: {
-                            "layers": "prge:users",
+                            "layers": "projekt_prge:users",
                             "TILED": true,
                         },
                         serverType: "geoserver",

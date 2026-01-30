@@ -1,27 +1,21 @@
-from fastapi import APIRouter
-from sqlalchemy import create_engine, text
-from ..settings import db_name, db_user, db_password
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+from config.fastapi.app.database import get_db
 
 router_get_users = APIRouter()
 
-def connect_to_db(db_name:str, db_user:str, db_password:str):
-    return create_engine(
-        f"postgresql://{db_user}:{db_password}@postgis:5432/{db_name}"
-    )
-
 @router_get_users.get("/get_users")
-async def get_users():
+async def get_users(db: Session = Depends(get_db)):
     try:
-        db_connection = connect_to_db(db_name, db_user, db_password)
+        sql_query = text("""SELECT * FROM users""")
 
-        sql_query = text("""select * from users""")
+        result = db.execute(sql_query)
 
-        with db_connection.connect() as conn:
-            result = conn.execute(sql_query)
-            users = [dict(row._mapping) for row in result]
+        users = [dict(row._mapping) for row in result]
+
         return {"status": "success", "users": users}
 
     except Exception as e:
-        print(f' Błąd podczas get_users')
+        print(f"Błąd podczas get_users: {str(e)}")
         return {"error": str(e)}
-
