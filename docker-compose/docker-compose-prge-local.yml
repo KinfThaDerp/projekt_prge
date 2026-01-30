@@ -1,0 +1,75 @@
+x-environment:
+  #DB
+  - &env-postgres-db POSTGRES_DB=${POSTGRES_DB}
+  - &env-postgres-user POSTGRES_USER=${POSTGRES_USER}
+  - &env-postgres-password POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+services:
+  postgis:
+    build:
+      context: ..
+      dockerfile: docker/postgis/Dockerfile
+    image: 'prge_bgm_postgis'
+    container_name: 'prge_bgm_postgis'
+    environment:
+      - *env-postgres-db
+      - *env-postgres-user
+      - *env-postgres-password
+    ports:
+      - 5444:5432
+    volumes:
+      - postgis-local-data:/var/lib/postgresql/data
+  geoserver:
+    build:
+      context: ..
+      dockerfile: docker/geoserver/Dockerfile
+    image: 'prge_bgm_geoserver'
+    container_name: 'prge_bgm_geoserver'
+    #environment:
+
+    ports:
+      - 9000:8080
+    volumes:
+      - ../.tmp/data:/opt/geoserver_data
+      - ../.tmp/geoserver-config:/opt/geoserver/data_dir
+  fastapi:
+    build:
+      context: ..
+      dockerfile: docker/fastapi/Dockerfile
+    image: 'prge_bgm_fastapi'
+    container_name: 'prge_bgm_fastapi'
+    environment:
+      - *env-postgres-db
+      - *env-postgres-user
+      - *env-postgres-password
+
+    ports:
+      - 10000:10000
+  node:
+    build:
+      context: ..
+      dockerfile: docker/node/Dockerfile
+    image: 'prge_bgm_node'
+    container_name: 'prge_bgm_node'
+    volumes:
+      - ../config/node/frontend/src:/app/src
+      - ../config/node/frontend/package.json:/app/package.json
+      - ../config/node/frontend/package-lock.json:/app/package-lock.json
+
+    ports:
+      - 3000:3000
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+  nginx:
+    build:
+      context: ..
+      dockerfile: docker/nginx/Dockerfile_local
+    image: 'prge_bgm_nginx'
+    container_name: 'prge_bgm_nginx'
+    ports:
+      - 8090:80
+
+
+volumes:
+  postgis-local-data:
