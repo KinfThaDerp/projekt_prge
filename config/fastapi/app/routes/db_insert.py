@@ -1,19 +1,15 @@
-from fastapi import APIRouter
-from sqlalchemy import create_engine, text
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+from config.fastapi.app.database import get_db
 from pydantic import BaseModel
-from ..settings import db_name, db_user, db_password
 
 router_insert = APIRouter()
 
-def connect_to_db(db_name:str, db_user:str, db_password:str):
-    return create_engine(
-        f"postgresql://{db_user}:{db_password}@postgis:5432/{db_name}"
-    )
-
 class UserData(BaseModel):
-  name: str
-  posts: int
-  location: str
+    name: str
+    posts: int
+    location: str
 
 def get_Coordinates(location:str) -> list[float]:
     import requests
@@ -30,19 +26,13 @@ def get_Coordinates(location:str) -> list[float]:
 
 
 @router_insert.post("/insert_user")
-async def insert_user(user: UserData):
-
+async def insert_user(user: UserData, db: Session = Depends(get_db)):
     try:
         lat, lon = get_Coordinates(user.location)
     except Exception as e:
-        print(f' Błąd podczas get_Coordinates')
-        return {"error": str(e)}
+        return {"error": f"Coord error: {str(e)}"}
 
     try:
-        db_connection = connect_to_db(db_user=db_user, db_password=db_password, db_name=db_name)
-
-#TODO TO DO ZROBIENIA DYNAMICZNIE
-
         params = {
             "name": user.name,
             "posts": user.posts,
@@ -52,18 +42,15 @@ async def insert_user(user: UserData):
         }
 
         sql_query = text("""
-                    insert into users (name, posts, location, coords)
-                    values (:name, :posts, :location, ST_MakePoint(:longitude, :latitude));
-                    """)
+                         INSERT INTO users (name, posts, location, coords)
+                         VALUES (:name, :posts, :location, ST_MakePoint(:longitude, :latitude));
+                         """)
 
-        with db_connection.connect() as conn:
-            result = conn.execute(sql_query, params)
-            conn.commit()
-            return {"status": "success"}
+        db.execute(sql_query, params)
+        db.commit()
+
+        return {"status": "success"}
 
     except Exception as e:
-        print(f' Błąd podczas insert_user')
+        db.rollback()
         return {"error": str(e)}
-    # return {"db_name": db_name, "db_user": user.name, "db_password": db_password}
-
-

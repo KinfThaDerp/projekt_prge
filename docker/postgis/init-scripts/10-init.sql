@@ -1,2 +1,2 @@
-create extension postgis;
-create extension pgrouting;
+CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS pgrouting;

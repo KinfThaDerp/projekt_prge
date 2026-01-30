@@ -25,7 +25,6 @@ services:
       dockerfile: docker/geoserver/Dockerfile
     image: 'prge_bgm_geoserver'
     container_name: 'prge_bgm_geoserver'
-    #environment:
 
     ports:
       - 9000:8080

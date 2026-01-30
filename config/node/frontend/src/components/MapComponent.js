@@ -1,14 +1,8 @@
 import React, {useEffect, useRef} from 'react';
 import Map from "ol/Map";
-import {bbox as bboxStrategy} from 'ol/loadingstrategy.js';
-import GeoJSON from 'ol/format/GeoJSON.js';
 import TileLayer from "ol/layer/Tile";
 import {OSM, TileWMS} from "ol/source";
-import VectorLayer from 'ol/layer/Vector.js';
-import VectorSource from 'ol/source/Vector.js';
 import {View} from "ol";
-import Style from 'ol/style/Style.js';
-import Stroke from 'ol/style/Stroke.js';
 import {useGeographic} from "ol/proj";
 import 'ol/ol.css';
 
@@ -47,30 +41,6 @@ function MapComponent(props) {
                         transition: 5000
                     })
                 })
-                // new VectorLayer({
-                //     source: new VectorSource({
-                //         format: new GeoJSON(),
-                //         url: function (extent) {
-                //             return (
-                //                 //http://localhost:9000/geoserver/ows?service=WFS&acceptversions=2.0.0&request=GetCapabilities
-                //                 'http://localhost:9000/geoserver/ows?service=WFS' +
-                //                 '&acceptversions=2.0.0&request=GetFeature&typename=prge:users&' +
-                //                 'outputFormat=application/json&srsname=EPSG:4326&' +
-                //                 'bbox=' +
-                //                 extent.join(',') +
-                //                 ',EPSG:4326'
-                //                 );
-                //             },
-                //         strategy: bboxStrategy,
-                //
-                //         }),
-                //     style: new Style({
-                //         stroke: new Stroke({
-                //         color: 'rgba(0, 0, 255, 1.0)',
-                //         width: 2,
-                //         }),
-                //     })
-                // })
             ],
             view: new View({
                 center: [21, 51],
