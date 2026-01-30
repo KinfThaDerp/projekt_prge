@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from config.fastapi.app.settings import db_name, db_user, db_password
+from .settings import db_name, db_user, db_password
 
 SQLALCHEMY_DATABASE_URL = f"postgresql://{db_user}:{db_password}@postgis:5432/{db_name}"
 
