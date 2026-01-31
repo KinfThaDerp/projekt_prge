@@ -14,11 +14,13 @@ class UserData(BaseModel):
 
 @router_insert_user.post("/insert_user")
 async def insert_user(user: UserData, db: Session = Depends(get_db)):
-    try:
-        coords = scrape_coordinates(user.location)
-        lat, lon = coords["lat"], coords["lon"]
-    except Exception as e:
-        return {"error": f"Coord error: {str(e)}"}
+
+    coords = scrape_coordinates(user.location)
+    if not coords.get("success"):
+        return {"error": f"Coord error: {coords.get('error', 'Unknown error')}"}
+
+    lat = coords["lat"]
+    lon = coords["lon"]
 
     try:
         params = {
@@ -42,3 +44,7 @@ async def insert_user(user: UserData, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         return {"error": str(e)}
+
+
+if __name__ == "__main__":
+    print(scrape_coordinates("Legionowo"))

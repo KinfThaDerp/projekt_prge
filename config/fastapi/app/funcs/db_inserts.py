@@ -69,30 +69,7 @@ def insert_address(
     return address_id
 
 
-def insert_person(
-    db: Session,
-    account_id: int,
-    name: str,
-    surname: str,
-    contact_id: int | None,
-    address_id: int | None,
-    role: str = 'client'
-) -> int:
-    query = text("""
-            INSERT INTO person (account_id, name, surname, contact_id, address_id, role)
-            VALUES (:acc_id, :name, :surname, :c_id, :add_id, :role)
-            RETURNING id;
-            """)
-    result = db.execute(query, {
-        "acc_id": account_id,
-        "name": name,
-        "surname": surname,
-        "c_id": contact_id,
-        "add_id": address_id,
-        "role": role
-    })
-    person_id = result.fetchone()[0]
-    return person_id
+
 
 
 def insert_city(db: Session, name: str) -> int | None:

@@ -18,169 +18,15 @@ import requests
 
 # noinspection PyUnresolvedReferences, PyDuplicatedCode
 
-
-def insert_book(cursor, title: str, author: str, isbn_13: str | None, publisher: str | None, genre: str | None) -> int:
-    query = """
-        INSERT INTO book (title, author, isbn_13, publisher, genre)
-        VALUES (%s, %s, %s, %s, %s)
-        RETURNING id;
-    """
-    cursor.execute(query, (title, author, isbn_13, publisher, genre))
-    return cursor.fetchone()[0]
-
-
-
-
-
 # Database - Updates
-
-def update_person(cursor, person_id: int, **kwargs) -> None:
-    query = """
-            UPDATE person SET {} WHERE id = %s;
-            """.format(
-            ", ".join(f"{key} = %s" for key in kwargs.keys())
-                )
-    cursor.execute(query, (*kwargs.values(), person_id))
-
-
-def update_book(cursor, book_id: int, **kwargs) -> None:
-    query = """
-                UPDATE book SET {} WHERE id = %s;
-                """.format(
-        ", ".join(f"{key} = %s" for key in kwargs.keys())
-    )
-    cursor.execute(query, (*kwargs.values(), book_id))
-
-
-def update_library(cursor, library_id: int, **kwargs) -> None:
-    query = """
-                UPDATE library SET {} WHERE id = %s;
-                """.format(
-        ", ".join(f"{key} = %s" for key in kwargs.keys())
-    )
-    cursor.execute(query, (*kwargs.values(), library_id))
-
-
 
 # Database - Fetchers
 
-def fetch_people(role: str | None = None) -> list:
-    query = """
-            SELECT id, account_id, name, surname, contact_id, address_id, role 
-            FROM person"""
-    if role:
-        query += " WHERE role = %s"
-        cursor.execute(query, (role,))
-    else:
-        cursor.execute(query)
-    return cursor.fetchall()
-
-def fetch_books() -> list:
-    query = """
-            SELECT * FROM book;
-            """
-    cursor.execute(query)
-    books = cursor.fetchall()
-    return books
-
-
-def fetch_book(book_id: int) -> tuple[int, str, str, str | None, str | None, str | None]:
-    query = """
-            SELECT id, title, author, isbn_13, publisher, genre 
-            FROM book WHERE id = %s; \
-            """
-    cursor.execute(query, (book_id,))
-    return cursor.fetchone()
-
-
-def fetch_libraries() -> list:
-    query = """
-        SELECT id, name, address_id, contact_id, city_id
-        FROM library;
-    """
-    cursor.execute(query)
-    return cursor.fetchall()
-
-
-def fetch_library(library_id: int) -> tuple[int, str, int | None, int | None, int]:
-    query = """
-        SELECT id, name, address_id, contact_id, city_id
-        FROM library WHERE id = %s;
-    """
-    cursor.execute(query, (library_id,))
-    return cursor.fetchone()
 
 
 
 
 
-def fetch_city(person_id: int) -> str | None:
-    query = """
-            SELECT city.name
-            FROM person JOIN address ON person.address_id = address.id JOIN city ON address.city_id = city.id
-            WHERE person.id = %s; \
-            """
-    cursor.execute(query, (person_id,))
-    result = cursor.fetchone()
-    return result[0] if result else None
-
-def fetch_city_name(city_id: int) -> str | None:
-    query = "SELECT name FROM city WHERE id = %s;"
-    cursor.execute(query, (city_id,))
-    result = cursor.fetchone()
-    return result[0] if result else None
-
-def fetch_all_city_names() -> list[str]:
-    query = "SELECT DISTINCT name FROM city ORDER BY name;"
-    cursor.execute(query)
-    rows = cursor.fetchall()
-    return [row[0] for row in rows]
-
-
-def fetch_address(address_id: int) -> tuple[str, str, str, str, list[float]]:
-    query = """
-        SELECT city.name, address.street, address.building, address.apartment, address.coords
-        FROM address
-        JOIN city ON address.city_id = city.id
-        WHERE address.id = %s;
-    """
-    cursor.execute(query, (address_id,))
-    result = cursor.fetchone()
-    return result if result else (None, None, None, None, None)
-
-
-def fetch_contact(contact_id: int) -> tuple | None:
-    query ="""
-           SELECT phone_number, email 
-           FROM contact 
-           WHERE id = %s
-            """
-    cursor.execute(query, (contact_id,))
-    return cursor.fetchone()
-
-
-def fetch_library_client_ids(library_id: int) -> list[int]:
-    query = "SELECT person_id FROM library_client WHERE library_id = %s;"
-    cursor.execute(query, (library_id,))
-    return [row[0] for row in cursor.fetchall()]
-
-
-def fetch_library_employee_ids(library_id: int) -> list[int]:
-    query = "SELECT person_id FROM library_employee WHERE library_id = %s;"
-    cursor.execute(query, (library_id,))
-    return [row[0] for row in cursor.fetchall()]
-
-
-def fetch_employee_library_info(person_id: int) -> tuple[int, str] | None:
-    query = """
-        SELECT l.id, l.name 
-        FROM library l
-        JOIN library_employee le ON l.id = le.library_id
-        WHERE le.person_id = %s
-        LIMIT 1;
-    """
-    cursor.execute(query, (person_id,))
-    return cursor.fetchone()
 
 
 def fetch_employees_by_city_name(city_name: str) -> list[dict]:
@@ -249,47 +95,6 @@ def insert_assignment_client_library(cursor, person_id: int, library_id: int) ->
                         """
     cursor.execute(update_role_query, (person_id,))
 
-def register_account_person(
-    username: str,
-    email: str,
-    password: str,
-    confirm_password: str,
-    name: str,
-    surname: str,
-    phone_number: int | None,
-    city: str | None,
-    street: str | None,
-    building: str | None,
-    apartment: str | None
-,   model=None) -> tuple[bool, str]:
-    if password != confirm_password:
-        return False, "Passwords do not match"
-    if not is_valid_email(email):
-        return False, "Invalid email format"
-    try:
-        with connection:
-            with connection.cursor() as cursor:
-
-                if does_account_with_username_exist(username):
-                    return False, "Username already exists"
-                if does_account_with_email_exist(email):
-                    return False, "Email already exists"
-                city_id = fetch_city_id(city)
-                if city_id is None:
-                    city_id = insert_city(cursor, city)
-                try:
-                    latitude, longitude = scrape_coords(city)
-                except Exception:
-                    return False, "Invalid city"
-                coords = [latitude, longitude]
-                account_id = insert_account(cursor, username, email, password)
-                contact_id = insert_contact(cursor, phone_number, email)
-                address_id = insert_address(cursor,city_id,street,building,apartment, coords)
-                insert_person(cursor,account_id,name,surname,contact_id,address_id)
-        return True, "User registered successfully"
-    except psycopg2.Error as e:
-        connection.rollback()
-        return False, f"error: {e.pgerror}"
 
 
 def login_account(
@@ -494,25 +299,7 @@ def get_person_info(person_id: int) -> dict | None:
         return None
 
 
-def delete_person(person_id: int) -> tuple[bool, str]:
-    try:
-        with connection:
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT contact_id, address_id FROM person WHERE id = %s", (person_id,))
-                result = cursor.fetchone()
-                if not result:
-                    return False, "Person not found"
-                contact_id, address_id = result
 
-                cursor.execute("DELETE FROM person WHERE id = %s", (person_id,))
-                if contact_id:
-                    cursor.execute("DELETE FROM contact WHERE id = %s", (contact_id,))
-                if address_id:
-                    cursor.execute("DELETE FROM address WHERE id = %s", (address_id,))
-
-        return True, "Person deleted successfully"
-    except Exception as e:
-        return False, f"Failed to delete person: {str(e)}"
 
 
 # CRUD - Books

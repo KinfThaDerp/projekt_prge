@@ -46,4 +46,4 @@ def scrape_voivodeship(location) -> str | None:
 
 
 if __name__ == '__main__':
-    print(scrape_coordinates("Warszawa"))
+    print(scrape_coordinates("Legionowo"))

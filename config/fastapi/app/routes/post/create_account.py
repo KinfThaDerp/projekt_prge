@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from ...database import get_db
 from ...funcs.scrapers import scrape_coordinates
-from ...funcs.db_inserts import insert_city, insert_address, insert_contact, insert_person, insert_account
+from ...funcs.crud_people import insert_person
+from ...funcs.db_inserts import insert_city, insert_address, insert_contact, insert_account
 from ...funcs.db_fetches import fetch_city_id
 from ...funcs.validators import username_exists, email_valid, email_exists
 from pydantic import BaseModel
@@ -64,5 +65,4 @@ async def create_account(user: AccountCreate, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         return {"error": str(e)}
-
 
