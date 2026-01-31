@@ -7,5 +7,5 @@ pandas
 geopandas
 bs4
 requests
-re
+regex
 bcrypt

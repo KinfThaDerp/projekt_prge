@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from ...database import get_db
-from ...funcs.scrapers import get_Coordinates
+from ...funcs.scrapers import scrape_coordinates
 from pydantic import BaseModel
 
 router_insert_user = APIRouter()
@@ -15,7 +15,8 @@ class UserData(BaseModel):
 @router_insert_user.post("/insert_user")
 async def insert_user(user: UserData, db: Session = Depends(get_db)):
     try:
-        lat, lon = get_Coordinates(user.location)
+        coords = scrape_coordinates(user.location)
+        lat, lon = coords["lat"], coords["lon"]
     except Exception as e:
         return {"error": f"Coord error: {str(e)}"}
 

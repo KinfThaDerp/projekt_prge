@@ -1,7 +1,9 @@
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 import re
 
 
-def is_valid_email(email: str) -> bool:
+def email_valid(email: str) -> bool:
     EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
     return bool(EMAIL_REGEX.fullmatch(email))
 
@@ -11,3 +13,13 @@ def is_valid_phone_number(phone_number:int) -> bool:
         return True
     else:
         return False
+
+
+def username_exists(db: Session, username: str) -> bool:
+    result = db.execute(text("SELECT 1 FROM account WHERE username = :u"), {"u": username})
+    return result.fetchone() is not None
+
+
+def email_exists(db: Session, email: str) -> bool:
+    result = db.execute(text("SELECT 1 FROM account WHERE email = :e"), {"e": email})
+    return result.fetchone() is not None

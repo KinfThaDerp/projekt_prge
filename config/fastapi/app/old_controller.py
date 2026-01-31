@@ -16,106 +16,7 @@ import requests
 
 #  Database
 
-def does_account_with_username_exist(username: str) -> bool:
-    query = """
-            SELECT 1
-            FROM account
-            WHERE username = %s
-            LIMIT 1;
-            """
-    cursor.execute(query, (username,))
-    return cursor.fetchone() is not None
-
-
-def does_account_with_email_exist(email: str) -> bool:
-    query = """
-            SELECT 1
-            FROM account
-            WHERE email = %s
-            LIMIT 1; \
-            """
-    cursor.execute(query, (email,))
-    return cursor.fetchone() is not None
-
-
-# Database - Inserters
-
-def insert_account(cursor, username: str, email: str, password: str) -> int:
-    password_hash = hash_password(password)
-    query = """
-            INSERT INTO account (username, email, password_hash)
-            VALUES (%s, %s, %s)
-            RETURNING id;
-            """
-    cursor.execute(query, (username, email, password_hash))
-    return cursor.fetchone()[0]
-
-
-def insert_contact(cursor, phone_number: int | None, email: str | None ) -> int:
-    query = """
-            INSERT INTO contact (phone_number, email)
-            VALUES (%s, %s)
-            RETURNING id;
-            """
-    cursor.execute(query, (phone_number, email))
-    return cursor.fetchone()[0]
-
-
-def insert_address(
-    cursor,
-    city_id: int | None,
-    street: str | None,
-    building: str | None,
-    apartment: str | None,
-    coords: list[float] | tuple[float, float] | None
-) -> int:
-    if coords and len(coords) == 2:
-        lat, lon = coords
-    else:
-        lat, lon = None, None
-    query = """
-        INSERT INTO address (city_id, street, building, apartment, coords)
-        VALUES (%s, %s, %s, %s, ARRAY[%s, %s]::real[])
-        RETURNING id;
-    """
-    cursor.execute(query, (city_id, street, building, apartment, lat, lon))
-    return cursor.fetchone()[0]
-
-
-def insert_person(
-    cursor,
-    account_id: int,
-    name: str,
-    surname: str,
-    contact_id: int | None,
-    address_id: int | None,
-    role: str = 'client'
-) -> int:
-    query = """
-        INSERT INTO person (account_id, name, surname, contact_id, address_id, role)
-        VALUES (%s, %s, %s, %s, %s, %s)
-        RETURNING id;
-    """
-    cursor.execute(query, (account_id, name, surname, contact_id, address_id, role))
-    return cursor.fetchone()[0]
-
-
-def insert_city(cursor, name: str) -> int | None:
-    if not name:
-        return None
-    voivodeship = scrape_voivodeship(name) or "Unknown"
-    try:
-        coords = scrape_coords(name)  # (lat, lon)
-    except Exception as e:
-        print(f"Failed to get coordinates for '{name}': {e}")
-        return None
-    query = """
-        INSERT INTO city (name, voivodeship, coords) 
-        VALUES (%s, %s, ARRAY[%s, %s]::real[])
-        RETURNING id;
-    """
-    cursor.execute(query, (name, voivodeship, coords[0], coords[1]))
-    return cursor.fetchone()[0]
+# noinspection PyUnresolvedReferences, PyDuplicatedCode
 
 
 def insert_book(cursor, title: str, author: str, isbn_13: str | None, publisher: str | None, genre: str | None) -> int:
@@ -210,18 +111,7 @@ def fetch_library(library_id: int) -> tuple[int, str, int | None, int | None, in
     return cursor.fetchone()
 
 
-def fetch_city_id(name: str) -> int | None:
-    if not name:
-        return None
-    query = """
-            SELECT id
-            FROM city
-            WHERE name = %s
-            LIMIT 1; \
-            """
-    cursor.execute(query, (name,))
-    result = cursor.fetchone()
-    return result[0] if result else None
+
 
 
 def fetch_city(person_id: int) -> str | None:
